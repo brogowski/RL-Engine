@@ -24,6 +24,3 @@
   (map
     #(get-row % height width)
     (take height (range))))
-
-
-
