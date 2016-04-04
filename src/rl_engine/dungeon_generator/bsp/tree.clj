@@ -64,12 +64,14 @@
      :width  (if (= WIDTH split-dimension)
                (+ 1 (split-dimension-func width ratio))
                width)
-     :top    (if (= HEIGHT split-dimension)
-               (split-coordinate-func top height ratio)
-               top)
-     :left   (if (= WIDTH split-dimension)
-               (split-coordinate-func left width ratio)
-               left)}))
+     :top    (- (if (= HEIGHT split-dimension)
+                  (split-coordinate-func top height ratio)
+                  top)
+                top)
+     :left   (- (if (= WIDTH split-dimension)
+                  (split-coordinate-func left width ratio)
+                  left)
+                left)}))
 
 (defn get-leaf-a
   [root split-dimension ratio]

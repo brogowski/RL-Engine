@@ -16,14 +16,27 @@
       (+ (rooms-count (:leaf-a rooms-tree))
          (rooms-count (:leaf-b rooms-tree))))))
 
+(defn change-coordinates-from-relative-to-absolute
+  [leaf-room root-room]
+  {:height (:height leaf-room)
+   :width  (:width leaf-room)
+   :top    (+ (:top leaf-room) (:top root-room))
+   :left   (+ (:left leaf-room) (:left root-room))
+   :leaf-a (:leaf-a leaf-room)
+   :leaf-b (:leaf-b leaf-room)})
+
 (defn flatten-rooms
   [rooms-tree]
   (if (nil? rooms-tree)
     []
     (if (and (nil? (:leaf-a rooms-tree)) (nil? (:leaf-b rooms-tree)))
       rooms-tree
-      (flatten [(flatten-rooms (:leaf-a rooms-tree)),
-                (flatten-rooms (:leaf-b rooms-tree))]))))
+      (flatten [(flatten-rooms (change-coordinates-from-relative-to-absolute
+                                 (:leaf-a rooms-tree)
+                                 rooms-tree)),
+                (flatten-rooms (change-coordinates-from-relative-to-absolute
+                                 (:leaf-b rooms-tree)
+                                 rooms-tree))]))))
 
 (defn flatten-rooms-dimensions
   [rooms-tree]
