@@ -1,5 +1,7 @@
 ---
 engines:
+  fixme:
+    enabled: true
   kibit:
     enabled: true
 ratings:
