@@ -11,12 +11,12 @@
     (= (dec max-width) current-width) WALL
     :else FLOOR))
 
-  (defn get-row [current-height max-height max-width]
-    (map
-      #(if (or (< max-height 3) (< max-width 3))
-        FLOOR
-        (get-cell current-height % max-height max-width))
-      (take max-width (range))))
+(defn get-row [current-height max-height max-width]
+  (map
+    #(if (or (< max-height 3) (< max-width 3))
+      FLOOR
+      (get-cell current-height % max-height max-width))
+    (take max-width (range))))
 
 (defn generate-dungeon
   "Generates new dungeon floor."

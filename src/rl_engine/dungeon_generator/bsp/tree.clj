@@ -105,7 +105,7 @@
 (defn generate-rooms-tree
   "Generates tree of rooms."
   ([height width]
-   (generate-rooms-tree height width (constantly (rand))))
+   (generate-rooms-tree height width rand))
   ([height width randomizer]
    (if (is-space-for-room? height width)
      (let [root {:height height
