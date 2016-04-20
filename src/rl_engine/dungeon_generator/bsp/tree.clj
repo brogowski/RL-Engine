@@ -85,13 +85,49 @@
             split-dimension-for-leaf-b
             split-coordinate-for-leaf-b))
 
+(defn trim-dimension-and-position
+  [dimension position randomizer]
+  (let [ratio (randomizer "room-dimension-trim")
+        trimmed-dimension (int (* dimension ratio))]
+    (if (< trimmed-dimension MINIMUM_SIZE)
+      {:dimension dimension
+       :position  position}
+      (let [free-space (- dimension trimmed-dimension)
+            offset-possibilities (range (inc free-space))
+            ratio (randomizer "room-position-trim")
+            random-offset-index (int (*
+                                       ratio
+                                       (count offset-possibilities)))
+            offset (nth offset-possibilities random-offset-index)]
+        {:dimension trimmed-dimension
+         :position  (+ position offset)}))))
+
+(defn trim-room
+  [room randomizer]
+  (let [trimmed-width (trim-dimension-and-position
+                  (:width room)
+                  (:left room)
+                  randomizer)
+        trimmed-height (trim-dimension-and-position
+                        (:height room)
+                        (:top room)
+                        randomizer)
+        new-width (:dimension trimmed-width)
+        new-left (:position trimmed-width)
+        new-height (:dimension trimmed-height)
+        new-top (:position trimmed-height)]
+    {:height new-height
+     :top    new-top
+     :width  new-width
+     :left   new-left}))
+
 (defn split-room
   [root randomizer]
   (let [height (:height root)
         width (:width root)
         top (:top root)
         left (:left root)
-        ratio (randomizer)]
+        ratio (randomizer "room-split")]
     (if (can-split-room? height width ratio)
       (let [split-dimension (get-split-dimension height width ratio randomizer)]
         {:height height
@@ -100,12 +136,15 @@
          :left   left
          :leaf-a (split-room (get-leaf-a root split-dimension ratio) randomizer)
          :leaf-b (split-room (get-leaf-b root split-dimension ratio) randomizer)})
-      root)))
+      (trim-room root randomizer))))
 
 (defn generate-rooms-tree
   "Generates tree of rooms."
   ([height width]
-   (generate-rooms-tree height width rand))
+   (generate-rooms-tree
+     height
+     width
+     (fn [& _] (rand))))
   ([height width randomizer]
    (if (is-space-for-room? height width)
      (let [root {:height height
