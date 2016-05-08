@@ -23,34 +23,34 @@
 
 (deftest correctly-renders-tree
   (testing "empty tree"
-    (is (= [[0, 0],
-            [0, 0]]
+    (is (= [[0 0]
+            [0 0]]
            (generate-dungeon 2 2 (constantly {}))))
     (is (= [[0]]
            (generate-dungeon 1 1 (constantly {})))))
   (testing "one room tree"
-    (is (= [[1, 1, 1],
-            [1, 0, 1],
-            [1, 1, 1]]
+    (is (= [[1 1 1]
+            [1 0 1]
+            [1 1 1]]
            (generate-dungeon 3 3 (constantly
                                    {:height 3
                                     :width  3
                                     :left   0
                                     :top    0}))))
-    (is (= [[1, 1, 1, 1],
-            [1, 0, 0, 1],
-            [1, 0, 0, 1],
-            [1, 1, 1, 1]]
+    (is (= [[1 1 1 1]
+            [1 0 0 1]
+            [1 0 0 1]
+            [1 1 1 1]]
            (generate-dungeon 4 4 (constantly
                                    {:height 4
                                     :width  4
                                     :left   0
                                     :top    0}))))
     (testing "two room tree"
-      (is (= [[1,1,1,1,1],
-              [1,0,1,0,1],
-              [1,0,1,0,1],
-              [1,1,1,1,1]]
+      (is (= [[1 1 1 1 1]
+              [1 0 1 0 1]
+              [1 0 1 0 1]
+              [1 1 1 1 1]]
              (generate-dungeon 4 5 (constantly {:height 4
                                                 :width  5
                                                 :left   0
@@ -63,11 +63,11 @@
                                                          :width  3
                                                          :left   2
                                                          :top    0}}))))
-      (is (= [[1,1,1],
-              [1,0,1],
-              [1,1,1],
-              [1,0,1],
-              [1,1,1]]
+      (is (= [[1 1 1]
+              [1 0 1]
+              [1 1 1]
+              [1 0 1]
+              [1 1 1]]
              (generate-dungeon 5 3 (constantly {:height 5
                                                 :width  3
                                                 :left   0
@@ -81,11 +81,11 @@
                                                          :left   0
                                                          :top    2}})))))
     (testing "four room tree"
-      (is (= [[1,1,1,1,1],
-              [1,0,1,0,1],
-              [1,1,1,1,1],
-              [1,0,1,0,1],
-              [1,1,1,1,1]]
+      (is (= [[1 1 1 1 1]
+              [1 0 1 0 1]
+              [1 1 1 1 1]
+              [1 0 1 0 1]
+              [1 1 1 1 1]]
              (generate-dungeon 5 5 (constantly {:height 5
                                                 :width  5
                                                 :left   0
@@ -114,3 +114,93 @@
                                                                   :width  3
                                                                   :left   0
                                                                   :top    2}}})))))))
+
+(deftest correctly-renders-entrances
+  (testing "when both entrances are at the same spot"
+    (is (= [[1 1 1 1 1]
+            [1 0 2 0 1]
+            [1 1 1 1 1]]
+           (generate-dungeon 3 5 (constantly
+                                   {:height 3
+                                    :width  5
+                                    :left   0
+                                    :top    0
+                                    :leaf-a {:height 3
+                                             :width  3
+                                             :left   0
+                                             :top    0
+                                             :entrance {:left 2
+                                                        :top  1}}
+                                    :leaf-b {:height 3
+                                             :width  3
+                                             :left   2
+                                             :top    0
+                                             :entrance {:left 0
+                                                        :top  1}}})))))
+  (testing "when entrances have distance 1"
+    (is (= [[1 1 1 1 1 1]
+            [1 0 2 2 0 1]
+            [1 1 1 1 1 1]]
+           (generate-dungeon 3 6 (constantly
+                                   {:height 3
+                                    :width  6
+                                    :left   0
+                                    :top    0
+                                    :leaf-a {:height 3
+                                             :width  3
+                                             :left   0
+                                             :top    0
+                                             :entrance {:left 2
+                                                        :top  1}}
+                                    :leaf-b {:height 3
+                                             :width  3
+                                             :left   3
+                                             :top    0
+                                             :entrance {:left 0
+                                                        :top  1}}})))))
+  (testing "when entrances have distance 2"
+    (is (= [[1 1 1 1 1 1 1]
+            [1 0 1 1 1 0 1]
+            [1 0 2 0 2 0 1]
+            [1 0 1 1 1 0 1]
+            [1 1 1 1 1 1 1]]
+           (generate-dungeon 5 7 (constantly
+                                   {:height 5
+                                    :width  7
+                                    :left   0
+                                    :top    0
+                                    :leaf-a {:height 5
+                                             :width  3
+                                             :left   0
+                                             :top    0
+                                             :entrance {:left 2
+                                                        :top  2}}
+                                    :leaf-b {:height 5
+                                             :width  3
+                                             :left   4
+                                             :top    0
+                                             :entrance {:left 0
+                                                        :top  2}}})))))
+  (testing "when entrances have distance 3"
+    (is (= [[1 1 1 1 1 1 1 1]
+            [1 0 1 1 1 1 0 1]
+            [1 0 2 0 0 2 0 1]
+            [1 0 1 1 1 1 0 1]
+            [1 1 1 1 1 1 1 1]]
+           (generate-dungeon 5 8 (constantly
+                                   {:height 5
+                                    :width  8
+                                    :left   0
+                                    :top    0
+                                    :leaf-a {:height 5
+                                             :width  3
+                                             :left   0
+                                             :top    0
+                                             :entrance {:left 2
+                                                        :top  2}}
+                                    :leaf-b {:height 5
+                                             :width  3
+                                             :left   5
+                                             :top    0
+                                             :entrance {:left 0
+                                                        :top  2}}}))))))
