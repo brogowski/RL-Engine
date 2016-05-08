@@ -59,9 +59,9 @@
   (let [height (count floor)
         width (count (first floor))
         entrance-a-height (:top entrance-a)
-        entrance-a-width  (:left entrance-a)
+        entrance-a-width (:left entrance-a)
         entrance-b-height (:top entrance-b)
-        entrance-b-width  (:left entrance-b)
+        entrance-b-width (:left entrance-b)
         horizontal-entrance-corridor? (= entrance-a-height entrance-b-height)
         should-be-floor? (fn [position lower-bound upper-bound]
                            (and (< position upper-bound)
@@ -110,17 +110,20 @@
                             (nil? cell-a) cell-b
                             (nil? cell-b) cell-a
                             :else (max cell-a cell-b)))))]
-      (let [tree-a (:tree tree-floor-a)
-            tree-b (:tree tree-floor-b)
-            entrance-a (:entrance tree-a)
-            entrance-b (:entrance tree-b)
-            offset-a (select-keys tree-a (keys entrance-a))
-            offset-b (select-keys tree-b (keys entrance-b))
-            corrected-entrance-a (merge-with + entrance-a offset-a)
-            corrected-entrance-b (merge-with + entrance-b offset-b)]
-        (connect-floor-entrances new-floor
-                                 corrected-entrance-a
-                                 corrected-entrance-b)))))
+      (if (or (nil? (:entrance (:tree tree-floor-a)))
+              (nil? (:entrance (:tree tree-floor-b))))
+        new-floor
+        (let [tree-a (:tree tree-floor-a)
+              tree-b (:tree tree-floor-b)
+              entrance-a (:entrance tree-a)
+              entrance-b (:entrance tree-b)
+              offset-a (select-keys tree-a (keys entrance-a))
+              offset-b (select-keys tree-b (keys entrance-b))
+              corrected-entrance-a (merge-with + entrance-a offset-a)
+              corrected-entrance-b (merge-with + entrance-b offset-b)]
+          (connect-floor-entrances new-floor
+                                   corrected-entrance-a
+                                   corrected-entrance-b))))))
 
 (defn sum-tree-floors
   [tree-floors max-height max-width]
