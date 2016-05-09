@@ -353,9 +353,9 @@
   (let [randomizer (get-split-only-randomizer 0.5 0.5)
         build-entrance-randomizer #(get-randomizer
                                     (assoc empty-randomizer-definition
-                                      "room-entrance" %
+                                      "room-entrance" %1
                                       "room-split" 0.5)
-                                    0.5)]
+                                    %2)]
     (testing "single room do not have entrance"
       (let [tree (generate-rooms-tree 4 4 randomizer)]
         (is (nil? (:entrance tree)))))
@@ -367,116 +367,331 @@
                     room-b (:leaf-b tree)]
                 {:room-a (get-entrance room-a)
                  :room-b (get-entrance room-b)}))]
-        (testing "when distance between rooms is 0"
-          (testing "when only one entrance can be set"
-            ; 1 1 1 1 1
-            ; 1 0 X 0 1
-            ; 1 1 1 1 1
-            (is (= {:room-a [1, 2]
-                    :room-b [1, 0]}
-                   (get-entrances randomizer
-                                  {:height 3
-                                   :width  5}))))
-          (testing "when two entrances can be set"
-            ; 1 1 1 1 1
-            ; 1 0 1 0 1
-            ; 1 0 1 0 1
-            ; 1 1 1 1 1
-            (let [dimensions {:height 4
-                              :width  5}]
-              (testing "when randomizer returns less then 0.5"
+        (testing "when room is split vertically"
+          (let [build-entrance-randomizer #(build-entrance-randomizer % 0.66)]
+            (testing "when distance between rooms is 0"
+              (testing "when only one entrance can be set"
                 ; 1 1 1 1 1
                 ; 1 0 X 0 1
-                ; 1 0 1 0 1
                 ; 1 1 1 1 1
                 (is (= {:room-a [1, 2]
                         :room-b [1, 0]}
-                       (get-entrances (build-entrance-randomizer 0.45)
-                                      dimensions))))
-              (testing "when randomizer returns more then 0.5"
-                ; 1 1 1 1 1
-                ; 1 0 1 0 1
-                ; 1 0 X 0 1
-                ; 1 1 1 1 1
-                (is (= {:room-a [2, 2]
-                        :room-b [2, 0]}
-                       (get-entrances (build-entrance-randomizer 0.65)
-                                      dimensions))))))
-          (testing "when three entrances can be set"
-            ; 1 1 1 1 1
-            ; 1 0 1 0 1
-            ; 1 0 1 0 1
-            ; 1 0 1 0 1
-            ; 1 1 1 1 1
-            (let [dimensions {:height 5
-                              :width  5}]
-              (testing "when randomizer returns less then 0.33"
-                ; 1 1 1 1 1
-                ; 1 0 X 0 1
-                ; 1 0 1 0 1
-                ; 1 0 1 0 1
-                ; 1 1 1 1 1
-                (is (= {:room-a [1, 2]
-                        :room-b [1, 0]}
-                       (get-entrances (build-entrance-randomizer 0.32)
-                                      dimensions))))
-              (testing "when randomizer returns more then 0.33 and less then 0.66"
-                ; 1 1 1 1 1
-                ; 1 0 1 0 1
-                ; 1 0 X 0 1
-                ; 1 0 1 0 1
-                ; 1 1 1 1 1
-                (is (= {:room-a [2, 2]
-                        :room-b [2, 0]}
-                       (get-entrances (build-entrance-randomizer 0.50)
-                                      dimensions))))
-              (testing "when randomizer returns more then 0.66"
+                       (get-entrances randomizer
+                                      {:height 3
+                                       :width  5}))))
+              (testing "when two entrances can be set"
                 ; 1 1 1 1 1
                 ; 1 0 1 0 1
                 ; 1 0 1 0 1
-                ; 1 0 X 0 1
                 ; 1 1 1 1 1
-                (is (= {:room-a [3, 2]
-                        :room-b [3, 0]}
-                       (get-entrances (build-entrance-randomizer 0.67)
-                                      dimensions)))))))
-        (testing "when distance between rooms is 1"
-          (testing "when only one entrance can be set"
-            ; 1 1 1 1 1 1
-            ; 1 0 X X 0 1
-            ; 1 1 1 1 1 1
-            (is (= {:room-a [1, 2]
-                    :room-b [1, 0]}
-                   (get-entrances (get-randomizer (assoc empty-randomizer-definition
-                                                    "room-dimension-trim" 0.75
-                                                    "room-split" 0.5)
-                                                  0.5)
-                                  {:height 3
-                                   :width  6}))))
-          (testing "when two entrances can be set"
-            (testing "when randomizer returns less then 0.5"
-              (let [get-room-randomizer
-                    #(get-randomizer (assoc empty-randomizer-definition
-                                       "room-dimension-trim" 0.75
-                                       "room-split" 0.5
-                                       "room-entrance" %)
-                                     0.5)]
+                (let [dimensions {:height 4
+                                  :width  5}]
+                  (testing "when randomizer returns less then 0.5"
+                    ; 1 1 1 1 1
+                    ; 1 0 X 0 1
+                    ; 1 0 1 0 1
+                    ; 1 1 1 1 1
+                    (is (= {:room-a [1, 2]
+                            :room-b [1, 0]}
+                           (get-entrances (build-entrance-randomizer 0.45)
+                                          dimensions))))
+                  (testing "when randomizer returns more then 0.5"
+                    ; 1 1 1 1 1
+                    ; 1 0 1 0 1
+                    ; 1 0 X 0 1
+                    ; 1 1 1 1 1
+                    (is (= {:room-a [2, 2]
+                            :room-b [2, 0]}
+                           (get-entrances (build-entrance-randomizer 0.65)
+                                          dimensions)))))
+                (testing "when three entrances can be set"
+                  ; 1 1 1 1 1
+                  ; 1 0 1 0 1
+                  ; 1 0 1 0 1
+                  ; 1 0 1 0 1
+                  ; 1 1 1 1 1
+                  (let [dimensions {:height 5
+                                    :width  5}]
+                    (testing "when randomizer returns less then 0.33"
+                      ; 1 1 1 1 1
+                      ; 1 0 X 0 1
+                      ; 1 0 1 0 1
+                      ; 1 0 1 0 1
+                      ; 1 1 1 1 1
+                      (is (= {:room-a [1, 2]
+                              :room-b [1, 0]}
+                             (get-entrances (build-entrance-randomizer 0.32)
+                                            dimensions))))
+                    (testing "when randomizer returns more then 0.33 and less then 0.66"
+                      ; 1 1 1 1 1
+                      ; 1 0 1 0 1
+                      ; 1 0 X 0 1
+                      ; 1 0 1 0 1
+                      ; 1 1 1 1 1
+                      (is (= {:room-a [2, 2]
+                              :room-b [2, 0]}
+                             (get-entrances (build-entrance-randomizer 0.50)
+                                            dimensions))))
+                    (testing "when randomizer returns more then 0.66"
+                      ; 1 1 1 1 1
+                      ; 1 0 1 0 1
+                      ; 1 0 1 0 1
+                      ; 1 0 X 0 1
+                      ; 1 1 1 1 1
+                      (is (= {:room-a [3, 2]
+                              :room-b [3, 0]}
+                             (get-entrances (build-entrance-randomizer 0.67)
+                                            dimensions))))))))
+            (testing "when distance between rooms is 1"
+              (testing "when only one entrance can be set"
                 ; 1 1 1 1 1 1
                 ; 1 0 X X 0 1
-                ; 1 0 0 0 0 1
                 ; 1 1 1 1 1 1
                 (is (= {:room-a [1, 2]
                         :room-b [1, 0]}
-                       (get-entrances (get-room-randomizer 0.45)
-                                      {:height 4
-                                       :width  6})))
-                (testing "when randomizer returns more then 0.5"
-                  ; 1 1 1 1 1 1
-                  ; 1 0 0 0 0 1
-                  ; 1 0 X X 0 1
-                  ; 1 1 1 1 1 1
-                  (is (= {:room-a [2, 2]
-                          :room-b [2, 0]}
-                         (get-entrances (get-room-randomizer 0.65)
-                                        {:height 4
-                                         :width  6}))))))))))))
+                       (get-entrances (get-randomizer (assoc empty-randomizer-definition
+                                                        "room-dimension-trim" 0.75
+                                                        "room-split" 0.5)
+                                                      0.5)
+                                      {:height 3
+                                       :width  6}))))
+              (testing "when two entrances can be set"
+                (testing "when randomizer returns less then 0.5"
+                  (let [get-room-randomizer
+                        #(get-randomizer (assoc empty-randomizer-definition
+                                           "room-dimension-trim" 0.75
+                                           "room-split" 0.5
+                                           "room-entrance" %)
+                                         0.5)]
+                    ; 1 1 1 1 1 1
+                    ; 1 0 X X 0 1
+                    ; 1 0 0 0 0 1
+                    ; 1 1 1 1 1 1
+                    (is (= {:room-a [1, 2]
+                            :room-b [1, 0]}
+                           (get-entrances (get-room-randomizer 0.45)
+                                          {:height 4
+                                           :width  6})))
+                    (testing "when randomizer returns more then 0.5"
+                      ; 1 1 1 1 1 1
+                      ; 1 0 0 0 0 1
+                      ; 1 0 X X 0 1
+                      ; 1 1 1 1 1 1
+                      (is (= {:room-a [2, 2]
+                              :room-b [2, 0]}
+                             (get-entrances (get-room-randomizer 0.65)
+                                            {:height 4
+                                             :width  6})))))))
+              (testing "when three entrances can be set"
+                ; 1 1 1 1 1
+                ; 1 0 1 0 1
+                ; 1 0 1 0 1
+                ; 1 0 1 0 1
+                ; 1 1 1 1 1
+                (let [dimensions {:height 5
+                                  :width  5}]
+                  (testing "when randomizer returns less then 0.33"
+                    ; 1 1 1 1 1
+                    ; 1 0 X 0 1
+                    ; 1 0 1 0 1
+                    ; 1 0 1 0 1
+                    ; 1 1 1 1 1
+                    (is (= {:room-a [1, 2]
+                            :room-b [1, 0]}
+                           (get-entrances (build-entrance-randomizer 0.32)
+                                          dimensions))))
+                  (testing "when randomizer returns more then 0.33 and less then 0.66"
+                    ; 1 1 1 1 1
+                    ; 1 0 1 0 1
+                    ; 1 0 X 0 1
+                    ; 1 0 1 0 1
+                    ; 1 1 1 1 1
+                    (is (= {:room-a [2, 2]
+                            :room-b [2, 0]}
+                           (get-entrances (build-entrance-randomizer 0.50)
+                                          dimensions))))
+                  (testing "when randomizer returns more then 0.66"
+                    ; 1 1 1 1 1
+                    ; 1 0 1 0 1
+                    ; 1 0 1 0 1
+                    ; 1 0 X 0 1
+                    ; 1 1 1 1 1
+                    (is (= {:room-a [3, 2]
+                            :room-b [3, 0]}
+                           (get-entrances (build-entrance-randomizer 0.67)
+                                          dimensions)))))))))
+        (testing "when room is split horizontally"
+          (let [build-entrance-randomizer #(build-entrance-randomizer % 0.33)]
+            (testing "when distance between rooms is 0"
+              (testing "when only one entrance can be set"
+                ; 1 1 1
+                ; 1 0 1
+                ; 1 X 1
+                ; 1 0 1
+                ; 1 1 1
+                (is (= {:room-a [2, 1]
+                        :room-b [0, 1]}
+                       (get-entrances randomizer
+                                      {:height 5
+                                       :width  3}))))
+              (testing "when two entrances can be set"
+                ; 1 1 1 1
+                ; 1 0 0 1
+                ; 1 1 1 1
+                ; 1 0 0 1
+                ; 1 1 1 1
+                (let [dimensions {:height 5
+                                  :width  4}]
+                  (testing "when randomizer returns less then 0.5"
+                    ; 1 1 1 1
+                    ; 1 0 0 1
+                    ; 1 X 1 1
+                    ; 1 0 0 1
+                    ; 1 1 1 1
+                    (is (= {:room-a [2, 1]
+                            :room-b [0, 1]}
+                           (get-entrances (build-entrance-randomizer 0.45)
+                                          dimensions))))
+                  (testing "when randomizer returns more then 0.5"
+                    ; 1 1 1 1
+                    ; 1 0 0 1
+                    ; 1 1 X 1
+                    ; 1 0 0 1
+                    ; 1 1 1 1
+                    (is (= {:room-a [2, 2]
+                            :room-b [0, 2]}
+                           (get-entrances (build-entrance-randomizer 0.65)
+                                          dimensions))))))
+              (testing "when three entrances can be set"
+                ; 1 1 1 1 1
+                ; 1 0 0 0 1
+                ; 1 1 1 1 1
+                ; 1 0 0 0 1
+                ; 1 1 1 1 1
+                (let [dimensions {:height 5
+                                  :width  5}]
+                  (testing "when randomizer returns less then 0.33"
+                    ; 1 1 1 1 1
+                    ; 1 0 0 0 1
+                    ; 1 X 1 1 1
+                    ; 1 0 0 0 1
+                    ; 1 1 1 1 1
+                    (is (= {:room-a [2, 1]
+                            :room-b [0, 1]}
+                           (get-entrances (build-entrance-randomizer 0.32)
+                                          dimensions))))
+                  (testing "when randomizer returns more then 0.33 and less then 0.66"
+                    ; 1 1 1 1 1
+                    ; 1 0 0 0 1
+                    ; 1 1 X 1 1
+                    ; 1 0 0 0 1
+                    ; 1 1 1 1 1
+                    (is (= {:room-a [2, 2]
+                            :room-b [0, 2]}
+                           (get-entrances (build-entrance-randomizer 0.50)
+                                          dimensions))))
+                  (testing "when randomizer returns more then 0.66"
+                    ; 1 1 1 1 1
+                    ; 1 0 0 0 1
+                    ; 1 1 1 X 1
+                    ; 1 0 0 0 1
+                    ; 1 1 1 1 1
+                    (is (= {:room-a [2, 3]
+                            :room-b [0, 3]}
+                           (get-entrances (build-entrance-randomizer 0.67)
+                                          dimensions)))))))
+            (testing "when distance between rooms is 1"
+              (testing "when only one entrance can be set"
+                ; 1 1 1
+                ; 1 0 1
+                ; 1 X 1
+                ; 1 X 1
+                ; 1 0 1
+                ; 1 1 1
+                (is (= {:room-a [2, 1]
+                        :room-b [0, 1]}
+                       (get-entrances (get-randomizer (assoc empty-randomizer-definition
+                                                        "room-dimension-trim" 0.75
+                                                        "room-split" 0.5)
+                                                      0.5)
+                                      {:height 6
+                                       :width  3}))))
+              (testing "when two entrances can be set"
+                ; 1 1 1 1
+                ; 1 0 0 1
+                ; 1 1 1 1
+                ; 1 1 1 1
+                ; 1 0 0 1
+                ; 1 1 1 1
+                (testing "when randomizer returns less then 0.5"
+                  (let [get-room-randomizer
+                        #(get-randomizer (assoc empty-randomizer-definition
+                                           "room-dimension-trim" 0.75
+                                           "room-split" 0.5
+                                           "room-entrance" %)
+                                         0.5)]
+                    ; 1 1 1 1
+                    ; 1 0 0 1
+                    ; 1 X 1 1
+                    ; 1 X 1 1
+                    ; 1 0 0 1
+                    ; 1 1 1 1
+                    (is (= {:room-a [2, 1]
+                            :room-b [0, 1]}
+                           (get-entrances (get-room-randomizer 0.45)
+                                          {:height 6
+                                           :width  4})))
+                    (testing "when randomizer returns more then 0.5"
+                      ; 1 1 1 1
+                      ; 1 0 0 1
+                      ; 1 1 X 1
+                      ; 1 1 X 1
+                      ; 1 0 0 1
+                      ; 1 1 1 1
+                      (is (= {:room-a [2, 2]
+                              :room-b [0, 2]}
+                             (get-entrances (get-room-randomizer 0.65)
+                                            {:height 6
+                                             :width  4})))))))
+              (testing "when three entrances can be set"
+                ; 1 1 1 1 1
+                ; 1 0 0 0 1
+                ; 1 1 1 1 1
+                ; 1 1 1 1 1
+                ; 1 0 0 0 1
+                ; 1 1 1 1 1
+                (let [dimensions {:height 5
+                                  :width  5}]
+                  (testing "when randomizer returns less then 0.33"
+                    ; 1 1 1 1 1
+                    ; 1 0 0 0 1
+                    ; 1 X 1 1 1
+                    ; 1 X 1 1 1
+                    ; 1 0 0 0 1
+                    ; 1 1 1 1 1
+                    (is (= {:room-a [2, 1]
+                            :room-b [0, 1]}
+                           (get-entrances (build-entrance-randomizer 0.32)
+                                          dimensions))))
+                  (testing "when randomizer returns more then 0.33 and less then 0.66"
+                    ; 1 1 1 1 1
+                    ; 1 0 0 0 1
+                    ; 1 1 X 1 1
+                    ; 1 1 X 1 1
+                    ; 1 0 0 0 1
+                    ; 1 1 1 1 1
+                    (is (= {:room-a [2, 2]
+                            :room-b [0, 2]}
+                           (get-entrances (build-entrance-randomizer 0.50)
+                                          dimensions))))
+                  (testing "when randomizer returns more then 0.66"
+                    ; 1 1 1 1 1
+                    ; 1 0 0 0 1
+                    ; 1 1 1 X 1
+                    ; 1 1 1 X 1
+                    ; 1 0 0 0 1
+                    ; 1 1 1 1 1
+                    (is (= {:room-a [2, 3]
+                            :room-b [0, 3]}
+                           (get-entrances (build-entrance-randomizer 0.67)
+                                          dimensions)))))))))))))

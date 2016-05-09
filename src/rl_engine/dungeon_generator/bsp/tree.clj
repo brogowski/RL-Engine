@@ -32,9 +32,9 @@
   [size ratio]
   (let [possible-wall-positions (vec (take (- size 4) (map #(+ % 2) (range))))]
     (some #(= % (int (* size ratio))) possible-wall-positions)))
-  ;(and
-  ;  (>= (split-dimension-for-leaf-a (- size 2) ratio) 1)
-  ;  (>= (split-dimension-for-leaf-b (- size 2) ratio) 1))
+;(and
+;  (>= (split-dimension-for-leaf-a (- size 2) ratio) 1)
+;  (>= (split-dimension-for-leaf-b (- size 2) ratio) 1))
 
 (defn can-split-room?
   [height width ratio]
@@ -98,7 +98,7 @@
             offset-possibilities (range (inc free-space))
             ratio (randomizer "room-position-trim")
             random-offset-index (int (* ratio
-                                       (count offset-possibilities)))
+                                        (count offset-possibilities)))
             offset (nth offset-possibilities random-offset-index)]
         {:dimension trimmed-dimension
          :position  (+ position offset)}))))
@@ -123,16 +123,25 @@
      :left   new-left}))
 
 (defn link-sub-rooms
-  [tree randomizer]
+  [tree randomizer split-dimension]
   (let [room-a (:leaf-a tree)
         room-b (:leaf-b tree)
-        ratio  (randomizer "room-entrance")
-        height-offset (inc (int (* ratio (- (:height tree) 2))))]
-    (let [room-a (assoc room-a :entrance {:top height-offset
-                                          :left (dec (:width room-a))})
-          room-b (assoc room-b :entrance {:top height-offset
-                                          :left 0})]
-      (assoc tree :leaf-a room-a :leaf-b room-b))))
+        ratio (randomizer "room-entrance")
+        get-offset #(inc (int (* ratio (- % 2))))
+        height-offset (get-offset (:height tree))
+        width-offset (get-offset (:width tree))
+        link-rooms #(let [room-a (assoc room-a :entrance %1)
+                          room-b (assoc room-b :entrance %2)]
+                     (assoc tree :leaf-a room-a :leaf-b room-b))]
+    (if (= split-dimension WIDTH)
+      (link-rooms {:top  height-offset
+                   :left (dec (:width room-a))}
+                  {:top  height-offset
+                   :left 0})
+      (link-rooms {:top  (dec (:height room-a))
+                   :left width-offset}
+                  {:top  0
+                   :left width-offset}))))
 
 (defn split-room
   [root randomizer]
@@ -149,7 +158,8 @@
                          :left   left
                          :leaf-a (split-room (get-leaf-a root split-dimension ratio) randomizer)
                          :leaf-b (split-room (get-leaf-b root split-dimension ratio) randomizer)}
-                        randomizer))
+                        randomizer
+                        split-dimension))
       (trim-room root randomizer))))
 
 (defn generate-rooms-tree

@@ -131,6 +131,28 @@
           (map #(resize-tree-floor (:tree %) (:floor %) max-height max-width)
                tree-floors)))
 
+(defn add-entrance
+  [floor entrance]
+  (let [height (count floor)
+        width (count (first floor))]
+    (let [floor-a (generate-floor
+                    height
+                    width
+                    #(get-room-cell %1 %2 height width entrance))
+          floor-b floor]
+      (generate-floor
+        height
+        width
+        (fn [x y]
+          (let [cell-a (get-floor-cell floor-a x y)
+                cell-b (get-floor-cell floor-b x y)]
+            (cond
+              (and (nil? cell-a)
+                   (nil? cell-b)) WALL
+              (nil? cell-a) cell-b
+              (nil? cell-b) cell-a
+              :else (max cell-a cell-b))))))))
+
 (defn generate-floor-from-tree
   [tree]
   (let [max-height (:height tree)
@@ -144,12 +166,13 @@
                         #(get-room-cell %1 %2 max-height max-width entrance))]
     (if (and (nil? leaf-a) (nil? leaf-b))
       tree-root-map
-      (sum-tree-floors [{:floor (generate-floor-from-tree leaf-a)
-                         :tree  leaf-a},
-                        {:floor (generate-floor-from-tree leaf-b)
-                         :tree  leaf-b}]
-                       max-height
-                       max-width))))
+      (add-entrance (sum-tree-floors [{:floor (generate-floor-from-tree leaf-a)
+                                       :tree  leaf-a},
+                                      {:floor (generate-floor-from-tree leaf-b)
+                                       :tree  leaf-b}]
+                                     max-height
+                                     max-width)
+                    entrance))))
 
 (defn generate-dungeon
   "Generates new dungeon floor."
@@ -159,4 +182,6 @@
    (let [tree (tree-generator)]
      (if (= {} tree)
        (generate-empty-floor height width)
-       (generate-floor-from-tree tree)))))
+       (do
+         (print tree)
+         (generate-floor-from-tree tree))))))

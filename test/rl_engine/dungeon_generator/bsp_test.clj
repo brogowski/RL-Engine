@@ -115,7 +115,7 @@
                                                                   :left   0
                                                                   :top    2}}})))))))
 
-(deftest correctly-renders-entrances
+(deftest correctly-renders-horizontal-entrances
   (testing "when both entrances are at the same spot"
     (is (= [[1 1 1 1 1]
             [1 0 2 0 1]
@@ -198,6 +198,119 @@
                                              :top    0
                                              :entrance {:left 2
                                                         :top  2}}
+                                    :leaf-b {:height 5
+                                             :width  3
+                                             :left   5
+                                             :top    0
+                                             :entrance {:left 0
+                                                        :top  2}}}))))))
+
+(deftest correctly-renders-vertical-entrances
+  (testing "when both entrances are at the same spot"
+    (is (= [[1 1 1]
+            [1 0 1]
+            [1 2 1]
+            [1 0 1]
+            [1 1 1]]
+           (generate-dungeon 5 3 (constantly
+                                   {:height 5
+                                    :width  3
+                                    :left   0
+                                    :top    0
+                                    :leaf-a {:height 3
+                                             :width  3
+                                             :left   0
+                                             :top    0
+                                             :entrance {:left 1
+                                                        :top  2}}
+                                    :leaf-b {:height 3
+                                             :width  3
+                                             :left   0
+                                             :top    2
+                                             :entrance {:left 1
+                                                        :top  0}}})))))
+  (testing "when entrances have distance 1"
+    (is (= [[1 1 1]
+            [1 0 1]
+            [1 2 1]
+            [1 2 1]
+            [1 0 1]
+            [1 1 1]]
+           (generate-dungeon 6 3 (constantly
+                                   {:height 6
+                                    :width  3
+                                    :left   0
+                                    :top    0
+                                    :leaf-a {:height 3
+                                             :width  3
+                                             :left   0
+                                             :top    0
+                                             :entrance {:left 1
+                                                        :top  2}}
+                                    :leaf-b {:height 3
+                                             :width  3
+                                             :left   0
+                                             :top    3
+                                             :entrance {:left 1
+                                                        :top  0}}})))))
+  (testing "when entrances have distance 2"
+    (is (= [[1 1 1 1 1]
+            [1 0 0 0 1]
+            [1 1 2 1 1]
+            [1 1 0 1 1]
+            [1 1 2 1 1]
+            [1 0 0 0 1]
+            [1 1 1 1 1]]
+           (generate-dungeon 7 5 (constantly
+                                   {:height 7
+                                    :width  5
+                                    :left   0
+                                    :top    0
+                                    :leaf-a {:height 3
+                                             :width  5
+                                             :left   0
+                                             :top    0
+                                             :entrance {:left 2
+                                                        :top  2}}
+                                    :leaf-b {:height 3
+                                             :width  5
+                                             :left   0
+                                             :top    4
+                                             :entrance {:left 2
+                                                        :top  0}}}))))))
+
+(deftest correctly-renders-multiple-entrances
+  (testing "when multiple entrance levels exist"
+    (is (= [[1 1 1 1 1 1 1 1]
+            [1 0 0 1 1 1 0 1]
+            [1 0 0 2 0 2 0 1]
+            [1 2 1 1 1 1 0 1]
+            [1 2 1 1 1 1 1 1]
+            [1 0 1 1 1 1 1 1]
+            [1 1 1 1 1 1 1 1]]
+           (generate-dungeon 7 8 (constantly
+                                   {:height 7
+                                    :width  8
+                                    :left   0
+                                    :top    0
+                                    :leaf-a {:height 7
+                                             :width  4
+                                             :left   0
+                                             :top    0
+                                             :entrance {:left 3
+                                                        :top  2}
+                                             :leaf-a {:height 4
+                                                      :width  4
+                                                      :left   0
+                                                      :top    0
+                                                      :entrance {:left 1
+                                                                 :top  3}}
+                                             :leaf-b {:height 3
+                                                      :width  3
+                                                      :left   0
+                                                      :top    4
+                                                      :entrance {:left 1
+                                                                 :top  0}}}
                                     :leaf-b {:height 5
                                              :width  3
                                              :left   5
