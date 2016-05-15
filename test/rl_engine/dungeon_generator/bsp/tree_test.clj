@@ -1,7 +1,8 @@
 (ns rl-engine.dungeon-generator.bsp.tree-test
   (:require [clojure.test :refer :all]
             [rl-engine.dungeon-generator.test-utils :refer :all]
-            [rl-engine.dungeon-generator.bsp.tree :refer :all]))
+            [rl-engine.dungeon-generator.bsp.tree :refer :all])
+  (use [clojure.set :only (difference)]))
 
 ;TODO: change to recur
 
@@ -10,6 +11,22 @@
    "room-dimension-trim" 0.0
    "room-position-trim"  0.0
    "room-split"          0.0})
+
+(defn all-are-in?
+  [input coll]
+  (reduce (fn [a b] (and a b))
+          (map (fn [x] (some #(= x %) coll))
+               input)))
+
+(defn any-in?
+  [input coll]
+  (reduce (fn [a b] (or a b))
+          (map (fn [x] (some #(= x %) coll))
+               input)))
+
+(defn none-in?
+  [input coll]
+  (not (any-in? input coll)))
 
 (defn remove-entrances
   [tree]
@@ -25,7 +42,8 @@
 
 (defn get-split-only-randomizer
   [split-ratio default]
-  (get-randomizer (assoc empty-randomizer-definition "room-split" split-ratio)
+  (get-randomizer (assoc empty-randomizer-definition
+                    "room-split" split-ratio)
                   default))
 
 (defn rooms-count
@@ -695,3 +713,43 @@
                             :room-b [0, 3]}
                            (get-entrances (build-entrance-randomizer 0.67)
                                           dimensions)))))))))))))
+
+(deftest trim-dimension-and-position-test
+  (testing "when trimmed room contains entrance"
+    (testing "only positions with entrance are selected "
+      (let [dimension 10
+            trimmed-room-dimension 5
+            original-room-offset 0
+            all-positions (take dimension (range))
+            get-trimmed-room (fn [entrance-position trimmed-room-position]
+                               (trim-dimension-and-position
+                                 dimension
+                                 original-room-offset
+                                 entrance-position
+                                 (get-randomizer
+                                   (assoc empty-randomizer-definition
+                                     "room-dimension-trim" (/ trimmed-room-dimension dimension)
+                                     "room-position-trim" (/ trimmed-room-position dimension))
+                                   0.5)))
+            get-correct-positions (fn [entrance-position]
+                                    (map (fn [x] (:position x))
+                                         (filter (fn [x] (= (:dimension x) trimmed-room-dimension))
+                                                 (map (fn [x] (get-trimmed-room entrance-position x))
+                                                      all-positions))))]
+        ; 0 1 2 3 4 5 6 7 8 9
+        ; 1 X X X X X X X X 1
+        (let [test-correct-positions (fn [correct-positions entrance-position]
+                                       (is (all-are-in? correct-positions
+                                                        (get-correct-positions entrance-position)))
+                                       (is (none-in? (difference (set all-positions) correct-positions)
+                                                     (get-correct-positions entrance-position))))]
+          (test-correct-positions [0 1 2 3 4 5] 0)
+          (test-correct-positions [0] 1)
+          (test-correct-positions [0 1] 2)
+          (test-correct-positions [0 1 2] 3)
+          (test-correct-positions [1 2 3] 4)
+          (test-correct-positions [2 3 4] 5)
+          (test-correct-positions [3 4 5] 6)
+          (test-correct-positions [4 5] 7)
+          (test-correct-positions [5] 8)
+          (test-correct-positions [0 1 2 3 4 5] 9))))))

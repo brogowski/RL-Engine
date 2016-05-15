@@ -182,6 +182,4 @@
    (let [tree (tree-generator)]
      (if (= {} tree)
        (generate-empty-floor height width)
-       (do
-         (print tree)
-         (generate-floor-from-tree tree))))))
+       (generate-floor-from-tree tree)))))
