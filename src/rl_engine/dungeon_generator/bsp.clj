@@ -180,6 +180,7 @@
    (generate-dungeon height width #(generate-rooms-tree height width)))
   ([height width tree-generator]
    (let [tree (tree-generator)]
+     (print tree)
      (if (= {} tree)
        (generate-empty-floor height width)
        (generate-floor-from-tree tree)))))

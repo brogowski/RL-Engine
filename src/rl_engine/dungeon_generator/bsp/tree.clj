@@ -17,13 +17,11 @@
 
 (defn split-dimension-for-leaf-a
   [size ratio]
-  (int (* size ratio)))
+  (inc (int (* size ratio))))
 
 (defn split-dimension-for-leaf-b
   [size ratio]
-  (if (= 0 (mod size 2))
-    (int (* (- size 1) (- 1 ratio)))
-    (int (* size (- 1 ratio)))))
+  (inc (- size (inc (int (* size ratio))))))
 
 (defn split-coordinate-for-leaf-a
   [min-position max-position ratio]
@@ -63,10 +61,10 @@
         top (:top root)
         left (:left root)]
     {:height (if (= HEIGHT split-dimension)
-               (+ 1 (split-dimension-func height ratio))
+               (split-dimension-func height ratio)
                height)
      :width  (if (= WIDTH split-dimension)
-               (+ 1 (split-dimension-func width ratio))
+               (split-dimension-func width ratio)
                width)
      :top    (- (if (= HEIGHT split-dimension)
                   (split-coordinate-func top height ratio)
@@ -96,7 +94,6 @@
         is-entrance-on-the-same-dimension-as-trim? (or
                                                      (= entrance-position (dec dimension))
                                                      (= entrance-position 0))
-        entrance-should-be-repositioned? is-entrance-on-the-same-dimension-as-trim?
         contains-entrance? #(and
                              (not is-entrance-on-the-same-dimension-as-trim?)
                              (< % entrance-position)
@@ -117,13 +114,14 @@
             offset (nth offset-possibilities random-offset-index)]
         (let [result {:dimension trimmed-dimension
                       :position  (+ original-position offset)
-                      :entrance  entrance-position}
-              fix-entrance #(if (= entrance-position (dec dimension))
-                             (dec trimmed-dimension)
-                             offset)]
-          (if entrance-should-be-repositioned?
-            (assoc result :entrance (fix-entrance))
-            result))))))
+                      :entrance  entrance-position}]
+          (if (nil? entrance-position)
+            result
+            (if is-entrance-on-the-same-dimension-as-trim?
+              (assoc result :entrance (if (= entrance-position (dec dimension))
+                                        (dec trimmed-dimension)
+                                        offset))
+              (assoc result :entrance (- entrance-position offset)))))))))
 
 (defn trim-room
   [room randomizer]
@@ -204,7 +202,7 @@
    (generate-rooms-tree
      height
      width
-     (fn [& _] (rand))))
+     (fn [& name] (let [value (rand)] (println (str name ": " value)) value))))
   ([height width randomizer]
    (if (is-space-for-room? height width)
      (let [root {:height height
